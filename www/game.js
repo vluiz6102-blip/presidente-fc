@@ -164,11 +164,11 @@ function playMatch(){
  if(Math.random()<.15)goals++;if(Math.random()<.15)against++;
  const gf=home?goals:against,ga=home?against:goals,score=gf+' x '+ga;
  G.round++;G.goalsFor+=gf;G.goalsAgainst+=ga;
- [me,opponent].forEach(t=>{t.p++;t.gf+=(t===me?gf:ga);t.ga+=(t===me?ga:gf)});
+ me.p++;me.gf+=gf;me.ga+=ga;opponent.p++;opponent.gf+=ga;opponent.ga+=gf;
  if(gf>ga){G.wins++;me.w++;me.pts+=3;G.club.fan=clamp(G.club.fan+3);G.club.board=clamp(G.club.board+2);G.squad.forEach(p=>p.morale=clamp(p.morale+4));G.club.cash+=Math.round(G.club.capacity*7);addNews('Vitória na rodada',G.club.name+' venceu por '+score+'. A torcida comemorou o resultado.','Jogo')}
  else if(gf===ga){G.draws++;me.d++;me.pts++;G.club.cash+=Math.round(G.club.capacity*3);addNews('Empate na rodada',G.club.name+' ficou no '+score+' contra '+opponent.name+'.','Jogo')}
  else{G.losses++;me.l++;G.club.fan=clamp(G.club.fan-4);G.club.board=clamp(G.club.board-3);G.squad.forEach(p=>p.morale=clamp(p.morale-5));addNews('Derrota aumenta a pressão',G.club.name+' perdeu por '+score+'. A diretoria cobra reação.','Jogo')}
- opponent.p++;if(gf>ga)opponent.l++;else if(gf===ga){opponent.d++;opponent.pts++}else{opponent.w++;opponent.pts+=3}
+ if(gf>ga)opponent.l++;else if(gf===ga){opponent.d++;opponent.pts++}else{opponent.w++;opponent.pts+=3}
  G.history.unshift({home:home?G.club.name:opponent.name,away:home?opponent.name:G.club.name,score,day:G.day});G.history=G.history.slice(0,20);
  G.club.cash+=Math.round(G.club.capacity*(G.round%2===1?2.4:1.7));G.day++;
  if(G.round===7){
