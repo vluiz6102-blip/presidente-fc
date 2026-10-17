@@ -67,6 +67,11 @@ assert.equal(state().club.cash, cashAfterPromise, 'promessa bloqueada não pode 
 assert.equal(state().day, dayAfterPromise, 'promessa bloqueada não deve avançar o dia');
 assert.ok(cashAfterPromise < cashBeforePromise, 'a promessa válida tem custo');
 
+const qualityBeforeWeakSigning = state().club.quality;
+call('signPlayer(0)');
+assert.equal(state().promises, 1, 'contratar jogador fraco não deve cumprir a promessa');
+assert.ok(state().club.quality <= qualityBeforeWeakSigning, 'contratar jogador abaixo do nível não pode inflar a força do clube');
+
 call('G.mandate = true');
 call('playMatch()');
 assert.equal(state().table.find(t => t.name === state().club.name).p, 1, 'o clube deve jogar uma partida por rodada');
