@@ -86,6 +86,16 @@ assert.equal(state().day, 12, 'perder a eleição não pode voltar o calendário
 assert.equal(state().electionDay, 17, 'a nova eleição deve ser marcada exatamente cinco dias depois');
 assert.equal(state().electionResolved, false, 'uma derrota deve permitir nova campanha');
 
+// A promessa não cumprida precisa reduzir o apoio ponderado, e a vitória deve liberar o mandato.
+call('G.day = 5; G.electionDay = 5; G.campaignScore = 60; G.rep = 60; G.club.fan = 60; G.club.board = 60; G.promises = 1; G.mandate = false; G.electionResolved = false');
+call('holdElection()');
+assert.equal(state().mandate, false, 'uma promessa pendente deve poder impedir a vitória');
+assert.equal(state().campaignScore, 48, 'a promessa pendente deve aplicar a penalidade eleitoral e a penalidade adicional da derrota');
+call('G.day = 10; G.electionDay = 10; G.campaignScore = 100; G.rep = 100; G.club.fan = 100; G.club.board = 100; G.promises = 0; G.mandate = false; G.electionResolved = false');
+call('holdElection()');
+assert.equal(state().mandate, true, 'apoio ponderado suficiente deve conceder o mandato');
+assert.equal(state().electionResolved, true, 'a eleição vencida deve ficar marcada como resolvida');
+
 // Uma temporada incompleta não pode ser apagada pela virada do dia 30.
 call('G.mandate = true; G.day = 29; G.round = 2; G.season = 3');
 call('advanceDay("teste de calendário", true)');
@@ -107,6 +117,9 @@ const completedRound = state().round;
 call('playMatch()');
 assert.equal(state().round, completedRound, 'não deve existir oitava partida na mesma temporada');
 assert.ok(state().table.every(t => t.p === 7), 'tabela completa deve manter sete jogos por clube');
+assert.ok(state().table.every(t => t.w + t.d + t.l === 7), 'vitórias, empates e derrotas devem totalizar os jogos de cada clube');
+assert.ok(state().table.every(t => t.pts === t.w * 3 + t.d), 'pontuação deve ser 3 por vitória e 1 por empate');
+assert.equal(state().table.reduce((sum, t) => sum + t.gf, 0), state().table.reduce((sum, t) => sum + t.ga, 0), 'gols marcados e sofridos devem fechar o balanço da liga');
 call('G.day = 29; G.season = 3; advanceDay("virada após temporada concluída", true)');
 assert.equal(state().season, 4, 'a nova temporada deve iniciar na virada do calendário após concluir as sete rodadas');
 assert.equal(state().round, 0, 'a nova temporada deve reiniciar a rodada em zero');
@@ -138,6 +151,32 @@ assert.equal(state().day, savedDay, 'load deve recuperar o dia salvo');
 assert.equal(state().club.name, savedClub, 'load deve recuperar o clube salvo');
 assert.equal(state().table.length, 8, 'load deve manter tabela com oito clubes');
 assert.equal(state().version, 3, 'save/load deve normalizar para versão 3');
+
+// Carreira v1 deve migrar sem deixar estruturas essenciais quebradas.
+const legacy = JSON.parse(storage.get('presidenteFC.save.v3'));
+legacy.version = 1;
+storage.delete('presidenteFC.save.v3');
+storage.set('presidenteFC.save.v1', JSON.stringify(legacy));
+call('G = null; load()');
+assert.equal(state().version, 3, 'carreira v1 deve migrar para versão 3');
+assert.equal(state().day, 1, 'migração v1 deve iniciar o novo calendário eleitoral');
+assert.equal(state().table.length, 8, 'migração v1 deve reconstruir uma tabela válida');
+assert.equal(state().mandate, false, 'migração v1 não deve conceder mandato automaticamente');
+
+// A interface não pode apontar para handlers ou IDs inexistentes.
+const html = fs.readFileSync('www/index.html', 'utf8');
+const source = fs.readFileSync('www/game.js', 'utf8');
+const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]));
+const duplicateIds = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]).filter((id, i, all) => all.indexOf(id) !== i);
+assert.deepEqual(duplicateIds, [], 'HTML não deve conter IDs duplicados');
+for (const match of html.matchAll(/\bon(?:click|change|input|submit)=["']([^"']+)["']/g)) {
+  const expression = match[1];
+  const functionCall = expression.match(/^\s*([A-Za-z_$][\w$]*)\s*\(/);
+  if (functionCall) assert.ok(new RegExp('function\\s+' + functionCall[1] + '\\s*\\(').test(source), 'handler inexistente: ' + functionCall[1]);
+}
+for (const match of html.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)) {
+  assert.ok(ids.has(match[1]), 'ID referenciado pelo JavaScript não existe no HTML: ' + match[1]);
+}
 
 // Segurança de texto dinâmico.
 assert.equal(call("escapeHtml('<img src=x onerror=alert(1)>')"),
