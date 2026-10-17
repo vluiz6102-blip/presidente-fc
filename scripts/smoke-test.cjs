@@ -96,6 +96,13 @@ call('holdElection()');
 assert.equal(state().mandate, true, 'apoio ponderado suficiente deve conceder o mandato');
 assert.equal(state().electionResolved, true, 'a eleição vencida deve ficar marcada como resolvida');
 
+// Contratação de reforço compatível deve cumprir exatamente uma promessa.
+call('G.promises = 1; G.club.quality = 95; G.day = 10; G.market[15].signed = false');
+const boardBeforeFulfillment = state().club.board;
+call('signPlayer(15)');
+assert.equal(state().promises, 0, 'um reforço com rating suficiente deve cumprir a promessa');
+assert.equal(state().club.board, Math.min(100, boardBeforeFulfillment + 4), 'cumprir a promessa deve melhorar a confiança uma única vez');
+
 // Uma temporada incompleta não pode ser apagada pela virada do dia 30.
 call('G.mandate = true; G.day = 29; G.round = 2; G.season = 3');
 call('advanceDay("teste de calendário", true)');
@@ -141,6 +148,24 @@ call('G.mandate = false');
 const boardBefore = state().club.board;
 call('coachSupport()');
 assert.equal(state().club.board, boardBefore, 'ações presidenciais devem ser bloqueadas antes da eleição');
+
+// Limites de upgrade não podem cobrar dinheiro, consumir dia nem inflar atributos.
+call('G.mandate = true; G.club.youth = 100; G.club.stadiumLevel = 100; G.club.capacity = 2000000; G.club.training = 100');
+const cashAtUpgradeLimit = state().club.cash;
+const dayAtUpgradeLimit = state().day;
+call("upgrade('youth')");
+call("upgrade('stadium')");
+call("upgrade('training')");
+assert.equal(state().club.cash, cashAtUpgradeLimit, 'upgrade no limite não pode cobrar dinheiro');
+assert.equal(state().day, dayAtUpgradeLimit, 'upgrade no limite não pode consumir dia');
+assert.equal(state().squad.length, 12, 'upgrade de base bloqueado não pode criar atletas extras');
+context.prompt = () => '1';
+call("G.coach.name = 'André Farias'");
+const cashBeforeSameCoach = state().club.cash;
+const dayBeforeSameCoach = state().day;
+call('coachMenu()');
+assert.equal(state().club.cash, cashBeforeSameCoach, 'contratar o mesmo treinador não pode cobrar duas vezes');
+assert.equal(state().day, dayBeforeSameCoach, 'contratar o mesmo treinador não pode consumir dia');
 
 // Save/load: carreira válida deve sobreviver a um ciclo.
 call('G.mandate = true; save()');
