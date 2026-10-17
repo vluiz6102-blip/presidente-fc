@@ -4,7 +4,7 @@
   "private": true,
   "description": "Presidente FC - simulador de presidência e gestão de futebol",
   "scripts": {
-    "build": "node -e \"console.log('Presidente FC: build estático pronto')\""
+    "build": "node --check www/game.js && node -e \"const fs=require('fs'); for (const f of ['www/index.html','www/styles.css','www/game.js']) { if (!fs.existsSync(f) || !fs.statSync(f).size) throw new Error('Arquivo ausente ou vazio: '+f); } console.log('Presidente FC: arquivos validados');\""
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
