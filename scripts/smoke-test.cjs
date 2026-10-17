@@ -169,12 +169,12 @@ const source = fs.readFileSync('www/game.js', 'utf8');
 const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]));
 const duplicateIds = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]).filter((id, i, all) => all.indexOf(id) !== i);
 assert.deepEqual(duplicateIds, [], 'HTML não deve conter IDs duplicados');
-for (const match of html.matchAll(/\bon(?:click|change|input|submit)=["']([^"']+)["']/g)) {
+for (const match of html.matchAll(/\bon(?:click|change|input|submit)\s*=\s*"([^"]+)"/g)) {
   const expression = match[1];
   const functionCall = expression.match(/^\s*([A-Za-z_$][\w$]*)\s*\(/);
   if (functionCall) assert.ok(new RegExp('function\\s+' + functionCall[1] + '\\s*\\(').test(source), 'handler inexistente: ' + functionCall[1]);
 }
-for (const match of html.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)) {
+for (const match of source.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)) {
   assert.ok(ids.has(match[1]), 'ID referenciado pelo JavaScript não existe no HTML: ' + match[1]);
 }
 
