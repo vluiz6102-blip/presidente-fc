@@ -21,7 +21,7 @@
 <div id="game" class="app" style="display:none">
  <header class="top"><div class="brand"><div class="crest">P</div><div><h1>PRESIDENTE FC</h1><small id="subBrand">CENTRAL DO CLUBE</small></div></div><div style="text-align:right"><div class="pill" id="seasonPill">TEMPORADA 1</div><div class="small muted" id="datePill">Dia 1</div></div></header>
  <section id="home" class="screen active">
-  <div class="hero"><div class="eyebrow" id="heroEyebrow">CENTRAL DA PRESIDÊNCIA</div><h2 id="greeting">O clube precisa de você.</h2><p id="heroText">Cada escolha pesa. Sua gestão começa hoje.</p><div class="hero-actions"><button class="primary" onclick="advanceDay()">Avançar o dia ↗</button><button onclick="showScreen('season')">Ver temporada</button></div></div>
+  <div class="hero"><div class="eyebrow" id="heroEyebrow">CENTRAL DA PRESIDÊNCIA</div><h2 id="greeting">O clube precisa de você.</h2><p id="heroText">Cada escolha pesa. Sua gestão começa hoje.</p><div class="hero-actions"><button class="primary" onclick="advanceDay()">Avançar o dia ↗</button><button onclick="showScreen('season')">Ver temporada</button><button onclick="showScreen('election')">Campanha eleitoral</button></div></div>
   <div class="grid">
    <div class="card s12"><div class="row"><h3 id="clubTitle">Meu clube</h3><span class="tag" id="leagueTag">LIGA</span></div><div class="stats" id="stats"></div></div>
    <div class="card s7"><h3>O que está pegando</h3><div id="urgentList" class="list"></div></div>
@@ -62,7 +62,7 @@
  <button data-screen="market" onclick="showScreen('market')"><span>⇄</span>Mercado</button>
  <button data-screen="season" onclick="showScreen('season')"><span>⚽</span>Temporada</button>
  <button data-screen="board" onclick="showScreen('board')"><span>♧</span>Bastidores</button>
- <button data-screen="news" onclick="showScreen('news')"><span>▤</span>Notícias</button>
+ <button data-screen="news" onclick="showScreen('news')"><span>▤</span>Notícias</button><button data-screen="election" onclick="showScreen('election')"><span>☑</span>Eleição</button>
 </nav>
 <div id="toast" class="toast"></div>
 <script src="game.js" defer></script>
