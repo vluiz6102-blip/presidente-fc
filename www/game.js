@@ -186,6 +186,7 @@ function coachMenu(){
  const options=COACHES.map((c,i)=>(i+1)+'. '+c[0]+' · força '+c[1]+' · salário '+money(c[2])+'/mês').join('\n');
  const answer=prompt('Escolha o treinador pelo número:\n'+options),c=COACHES[Number(answer)-1];
  if(!c)return;
+ if(c[0]===G.coach.name){toast('Esse treinador já está no comando.');return}
  if(G.club.cash<c[2]*2){toast('Caixa insuficiente para contratar esse treinador.');return}
  G.club.cash-=c[2]*2;G.coach={name:c[0],skill:c[1],wage:c[2]};G.club.board=clamp(G.club.board+2);
  G.lastUpdate='Novo treinador contratado: '+c[0]+'. Custo de duas folhas salariais.';addNews('Novo treinador contratado',c[0]+' assume a comissão técnica.','Clube');advanceDay(G.lastUpdate,true);render();toast('Novo treinador apresentado.')
@@ -203,11 +204,14 @@ function upgrade(type){
  if(!G.mandate){toast('Você precisa ser eleito para aprovar investimentos no clube.');return}
  const costs={training:350000,stadium:600000,youth:250000},cost=costs[type];
  if(!cost){toast('Investimento inválido.');return}
+ if(type==='training'&&G.club.training>=100){toast('O centro de treinamento já atingiu o nível máximo.');return}
+ if(type==='stadium'&&(G.club.stadiumLevel>=100||G.club.capacity>=2000000)){toast('O estádio já atingiu o limite de expansão.');return}
+ if(type==='youth'&&(G.club.youth>=100||G.squad.length>=100)){toast('A base ou o elenco já atingiu o limite de desenvolvimento.');return}
  if(G.club.cash<cost){toast('Caixa insuficiente para esse investimento.');return}
  G.club.cash-=cost;
  if(type==='training'){G.club.training++;G.club.quality=clamp(G.club.quality+2);G.squad.forEach(p=>p.rating=clamp(p.rating+1))}
- if(type==='stadium'){G.club.stadiumLevel++;G.club.capacity=Math.round(G.club.capacity*1.12);G.club.fan=clamp(G.club.fan+3)}
- if(type==='youth'){G.club.youth++;G.squad.push({id:'s'+Date.now(),name:nameGen(),pos:pick(['DEF','MEI','ATA']),age:17,rating:clamp(G.club.quality-10,30,70),value:300000,wage:12000,morale:75,starter:false})}
+ if(type==='stadium'){G.club.stadiumLevel++;G.club.capacity=Math.min(2000000,Math.round(G.club.capacity*1.12));G.club.fan=clamp(G.club.fan+3)}
+ if(type==='youth'){G.club.youth++;G.squad.push({id:'s'+Date.now()+'-'+G.squad.length,name:nameGen(),pos:pick(['DEF','MEI','ATA']),age:17,rating:clamp(G.club.quality-10,30,70),value:300000,wage:12000,morale:75,starter:false})}
  G.lastUpdate='Investimento concluído: '+type+'. Custo '+money(cost)+'.';addNews('Investimento aprovado',({training:'Centro de treinamento ampliado.',stadium:'Obras de modernização do estádio iniciadas.',youth:'Um jovem talento foi promovido da base.'})[type],'Clube');advanceDay(G.lastUpdate,true);render();toast('Investimento realizado.')
 }
 // ── Simulação esportiva: rodadas, tabela e resultados ──
