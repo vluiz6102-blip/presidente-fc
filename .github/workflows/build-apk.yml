@@ -25,8 +25,10 @@ jobs:
           java-version: 21
       - name: Validate game JavaScript
         run: |
-          node -e 'const fs=require("fs"); const h=fs.readFileSync("www/index.html","utf8"); const s=h.split("<script>")[1].split("</script>")[0]; fs.writeFileSync("/tmp/pfc.js",s)'
-          node --check /tmp/pfc.js
+          test -s www/index.html
+          test -s www/styles.css
+          test -s www/game.js
+          node --check www/game.js
       - name: Install dependencies
         run: npm install
       - name: Create Android project
