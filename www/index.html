@@ -13,16 +13,17 @@
   <div class="field"><label>SEU NOME</label><input id="candidateName" maxlength="32" placeholder="Ex.: Victor Maia" value="Victor Maia"></div>
   <div class="field"><label>APELIDO NA IMPRENSA</label><input id="nickname" maxlength="22" placeholder="Ex.: O Estrategista" value="O Estrategista"></div>
   <div class="field"><label>CLUBE PARA DISPUTAR A ELEIÇÃO</label><select id="clubChoice"></select></div>
-  <div class="field"><label>PLANO DE GOVERNO</label><select id="manifesto"><option value="base">Reorganização financeira</option><option value="base">Categorias de base</option><option value="base">Time competitivo agora</option><option value="fans">Torcida e estádio</option></select></div>
+  <div class="field"><label>PLANO DE GOVERNO</label><select id="manifesto"><option value="finance">Reorganização financeira</option><option value="youth">Categorias de base</option><option value="team">Time competitivo agora</option><option value="fans">Torcida e estádio</option></select></div>
   <button class="primary" style="width:100%" onclick="startCareer()">Lançar candidatura →</button>
-  <div class="notice">Todos os clubes e atletas desta versão são fictícios. O jogo salva a carreira neste aparelho automaticamente.</div>
+  <div class="notice">Os clubes são reais; os atletas gerados para a carreira são fictícios. Sua carreira é salva automaticamente neste aparelho.</div>
  </div>
 </div>
 <div id="game" class="app" style="display:none">
  <header class="top"><div class="brand"><div class="crest">P</div><div><h1>PRESIDENTE FC</h1><small id="subBrand">CENTRAL DO CLUBE</small></div></div><div style="text-align:right"><div class="pill" id="seasonPill">TEMPORADA 1</div><div class="small muted" id="datePill">Dia 1</div></div></header>
  <section id="home" class="screen active">
-  <div class="hero"><div class="eyebrow" id="heroEyebrow">CENTRAL DA PRESIDÊNCIA</div><h2 id="greeting">O clube precisa de você.</h2><p id="heroText">Cada escolha pesa. Sua gestão começa hoje.</p><div class="hero-actions"><button class="primary" onclick="advanceDay()">Avançar o dia ↗</button><button onclick="showScreen('season')">Ver temporada</button><button onclick="showScreen('election')">Campanha eleitoral</button></div></div>
+  <div class="hero"><div class="eyebrow" id="heroEyebrow">CENTRAL DA PRESIDÊNCIA</div><h2 id="greeting">O clube precisa de você.</h2><p id="heroText">Cada escolha pesa. Sua gestão começa hoje.</p><div class="hero-actions"><button class="primary" onclick="advanceDay()">Avançar o dia ↗</button><button onclick="showScreen('season')">Ver temporada</button><button id="campaignHomeButton" onclick="showScreen('election')">Campanha eleitoral</button></div></div>
   <div class="grid">
+   <div class="card s12" id="dailyUpdate" aria-live="polite"><b>Última mudança</b><div class="small" style="margin-top:5px">Sua carreira começou. Escolha uma ação para ver as consequências aqui.</div></div>
    <div class="card s12"><div class="row"><h3 id="clubTitle">Meu clube</h3><span class="tag" id="leagueTag">LIGA</span></div><div class="stats" id="stats"></div></div>
    <div class="card s7"><h3>O que está pegando</h3><div id="urgentList" class="list"></div></div>
    <div class="card s5"><h3>Painel de confiança</h3><div id="confidence"></div><div class="notice" id="boardMood"></div></div>
@@ -52,7 +53,7 @@
  </section>
  <section id="election" class="screen">
   <div class="section-head"><div><div class="eyebrow">DEMOCRACIA DO CLUBE</div><h2>Eleição presidencial</h2></div></div>
-  <div class="card"><h3 id="electionTitle">Campanha eleitoral</h3><p id="electionDesc" class="muted"></p><div id="electionBody"></div><div class="actions" style="margin-top:13px"><button class="primary" onclick="campaign('members')">Visitar sócios</button><button onclick="campaign('fans')">Ato com a torcida</button><button onclick="campaign('plan')">Apresentar plano</button></div></div>
+  <div class="card"><h3 id="electionTitle">Campanha eleitoral</h3><p id="electionDesc" class="muted"></p><div id="electionBody"></div><div class="actions" id="campaignActions" style="margin-top:13px"><button class="primary" onclick="campaign('members')">Visitar sócios · $ 50 mil</button><button onclick="campaign('fans')">Ato com a torcida · $ 50 mil</button><button onclick="campaign('plan')">Apresentar plano · $ 50 mil</button></div></div>
  </section>
  <div class="footer-note">PRESIDENTE FC · PROTÓTIPO JOGÁVEL · SALVAMENTO LOCAL</div>
 </div>
