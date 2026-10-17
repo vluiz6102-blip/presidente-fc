@@ -1,17 +1,27 @@
 # Presidente FC
 
-Simulador mobile de presidência de futebol, com eleições, reputação, diretoria, treinador, elenco, transferências, finanças, notícias e temporadas simuladas.
+Simulador mobile de presidência e gestão de futebol, com interface responsiva para Android.
 
-## Gerar APK gratuitamente
+## O que já existe
 
-O GitHub Actions compila o APK de debug quando houver push na branch `main` ou execução manual. Abra a aba **Actions**, selecione **Build Presidente FC APK** e baixe o artefato `presidente-fc-debug-apk` ao terminar.
+- 27 clubes reais selecionáveis, do futebol brasileiro a gigantes europeus, com seus estádios e perfis de força/finanças inspirados no nível do clube.
+- Eleição presidencial e ações de campanha; confiança de sócios, torcida, diretoria e reputação pública.
+- Caixa, receitas e despesas diárias, patrocínios, folha salarial, investimentos em estádio, centro de treinamento e categorias de base.
+- Treinador, elenco gerado para a carreira, contratação/venda de atletas, mercado e impacto de resultados na moral.
+- Temporadas com sete rodadas, partidas simuladas, tabela que atualiza os demais jogos da rodada, manchetes, crises e salvamento local.
+- Interface mobile em verde escuro, navegação por áreas e estilos/código do jogo separados para facilitar manutenção.
 
-## Projeto
+## Gerar APK grátis
 
-- Aplicação web estática leve, adequada para WebView Android.
-- Estado de carreira salvo no armazenamento local do dispositivo.
-- Sem necessidade de serviços pagos, chaves de API ou créditos de IA.
-- Clubes e atletas fictícios no protótipo, para evitar afirmar licenciamento de dados oficiais.
+O GitHub Actions compila um APK de debug a cada alteração na branch `main`. Acesse **Actions**, abra a execução mais recente concluída e baixe o artefato `presidente-fc-debug-apk`.
+
+## Arquivos principais
+
+- `www/index.html`: estrutura da interface.
+- `www/styles.css`: tema e layout responsivo.
+- `www/game.js`: dados e lógica da carreira.
+- `capacitor.config.json`: identidade do app Android.
+- `.github/workflows/build-apk.yml`: validação e compilação automática.
 
 ## Desenvolvimento
 
@@ -22,4 +32,4 @@ npx cap add android
 npx cap sync android
 ```
 
-O APK debug é para teste. Antes de uma publicação na loja, é necessário preparar assinatura de release, política de privacidade e revisão dos recursos e licenças.
+Os nomes de clubes são reais; jogadores do elenco e eventos são simulados, não um banco oficial licenciado. O APK de debug serve para teste. Publicação em loja exige assinatura de release, política de privacidade e revisão de licenças.
