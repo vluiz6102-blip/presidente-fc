@@ -50,28 +50,64 @@ function save(){
 function load(){
  try{
   const raw=localStorage.getItem('presidenteFC.save.v3')||localStorage.getItem('presidenteFC.save.v2')||localStorage.getItem('presidenteFC.save.v1');
-  if(!raw)return false;
+  if(!raw){G=null;return false}
   const parsed=JSON.parse(raw);
-  if(!parsed||!parsed.club||!Array.isArray(parsed.squad)||!Array.isArray(parsed.market))return false;
+  if(!parsed||typeof parsed!=='object'||!parsed.club||!Array.isArray(parsed.squad)||!Array.isArray(parsed.market)){G=null;return false}
+  const base=CLUBS.find(c=>c.name===parsed.club.name);
+  if(!base){G=null;return false}
   G=parsed;
+  const str=(v,f,max=120)=>typeof v==='string'?v.slice(0,max):f;
+  const num=(v,f,min=-1e12,max=1e12)=>{const n=Number(v);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):f};
+  const int=(v,f,min=0,max=1e9)=>Math.round(num(v,f,min,max));
   if((G.version||1)<2){
-   G.mandate=false;G.electionResolved=false;G.day=1;G.electionDay=7;G.campaignScore=24;
-   G.rep=Math.max(28,Math.min(40,G.rep||32));G.actionCounts={};G.promises=0;
+   G.mandate=false;G.electionResolved=false;G.day=1;G.electionDay=7;G.campaignScore=24;G.rep=Math.max(28,Math.min(40,G.rep||32));G.actionCounts={};G.promises=0;
    G.lastUpdate='Nova lógica eleitoral ativada. Sua carreira foi ajustada para uma nova votação mais justa.';
    G.news=Array.isArray(G.news)?G.news:[];
    G.news.unshift({day:1,title:'Regras eleitorais atualizadas',body:'A campanha agora exige apoio real, promessas têm consequências e ações repetidas rendem menos.',kind:'Política'});
   }
   if((G.version||1)<3){
    G.actionCounts=G.actionCounts&&typeof G.actionCounts==='object'?G.actionCounts:{};
-   G.promises=Math.max(0,Number(G.promises)||0);
-   G.electionResolved=Boolean(G.electionResolved);
+   G.promises=Math.max(0,Number(G.promises)||0);G.electionResolved=Boolean(G.electionResolved);
    G.sponsorLastNegotiationDay=Number.isFinite(G.sponsorLastNegotiationDay)?G.sponsorLastNegotiationDay:(Number(G.day)||1)-15;
-   G.news=Array.isArray(G.news)?G.news:[];
-   G.history=Array.isArray(G.history)?G.history:[];
-   G.table=Array.isArray(G.table)?G.table:[];
+   G.news=Array.isArray(G.news)?G.news:[];G.history=Array.isArray(G.history)?G.history:[];G.table=Array.isArray(G.table)?G.table:[];
    G.version=3;G.lastUpdate=G.lastUpdate||'Carreira atualizada e validada.';
   }
-  if(!G.coach||!G.sponsor||!G.club.name||!G.table.length||!G.squad.length)return false;
+  G.version=3;G.candidate=str(G.candidate,'Victor Maia',32);G.nickname=str(G.nickname,'O Estrategista',22);
+  G.manifesto=['finance','youth','team','fans'].includes(G.manifesto)?G.manifesto:'finance';
+  G.club={...base,...G.club,name:base.name,league:base.league,stadium:base.stadium,
+   level:int(G.club.level,base.level,1,5),cash:num(G.club.cash,base.cash,-1e12,1e12),
+   fan:int(G.club.fan,base.fan,0,100),board:int(G.club.board,base.board,0,100),quality:int(G.club.quality,base.quality,20,100),
+   capacity:int(G.club.capacity,base.capacity,1000,2000000),stadiumLevel:int(G.club.stadiumLevel,1,1,100),
+   training:int(G.club.training,1,1,100),youth:int(G.club.youth,1,1,100)};
+  G.day=int(G.day,1,1,10000000);G.season=int(G.season,1,1,1000000);G.electionDay=int(G.electionDay,7,1,10000000);
+  G.campaignScore=int(G.campaignScore,26,0,100);G.rep=int(G.rep,32,0,100);G.mandate=Boolean(G.mandate);
+  G.electionResolved=Boolean(G.electionResolved||G.mandate);G.round=int(G.round,0,0,7);
+  for(const key of ['wins','draws','losses','goalsFor','goalsAgainst'])G[key]=int(G[key],0,0,1000000);
+  G.promises=int(G.promises,0,0,1);
+  G.actionCounts=G.actionCounts&&typeof G.actionCounts==='object'&&!Array.isArray(G.actionCounts)?Object.fromEntries(Object.entries(G.actionCounts).filter(([k])=>typeof k==='string').map(([k,v])=>[k,int(v,0,0,1000000)])):{};
+  G.coach={name:str(G.coach?.name,base.coach,80),skill:int(G.coach?.skill,base.coachSkill,20,100),wage:int(G.coach?.wage,base.wage,0,1e9)};
+  G.sponsor={name:str(G.sponsor?.name,'Parceiro Local',80),value:int(G.sponsor?.value,base.sponsor,0,1e10),days:int(G.sponsor?.days,30,1,30)};
+  G.sponsorLastNegotiationDay=int(G.sponsorLastNegotiationDay,G.day-15,-10000000,G.day);
+  G.squad=G.squad.filter(p=>p&&typeof p==='object'&&typeof p.name==='string').slice(0,100).map((p,i)=>({...p,
+   id:str(p.id,'s'+i,64),name:str(p.name,'Atleta '+(i+1),60),pos:['GOL','DEF','MEI','ATA'].includes(p.pos)?p.pos:'MEI',
+   age:int(p.age,22,16,50),rating:int(p.rating,50,20,100),value:int(p.value,0,0,1e10),wage:int(p.wage,0,0,1e8),morale:int(p.morale,60,0,100),starter:Boolean(p.starter)}));
+  G.market=G.market.filter(p=>p&&typeof p==='object'&&typeof p.name==='string').slice(0,200).map((p,i)=>({...p,
+   id:int(p.id,i,0,1000000),name:str(p.name,'Atleta de mercado '+(i+1),60),pos:['GOL','DEF','MEI','ATA'].includes(p.pos)?p.pos:'MEI',
+   age:int(p.age,22,16,50),rating:int(p.rating,50,20,100),value:int(p.value,0,0,1e10),wage:int(p.wage,0,0,1e8),signed:Boolean(p.signed)}));
+  const names=new Set();
+  let table=Array.isArray(G.table)?G.table.filter(t=>t&&typeof t.name==='string'&&CLUBS.some(c=>c.name===t.name)&&!names.has(t.name)&&(names.add(t.name),true)):[];
+  if(table.length!==8||!names.has(G.club.name)){
+   const rivals=CLUBS.filter(c=>c.name!==G.club.name&&Math.abs(c.level-G.club.level)<=1).slice(0,7);
+   for(const c of CLUBS.filter(c=>c.name!==G.club.name&&!rivals.some(r=>r.name===c.name))){if(rivals.length>=7)break;rivals.push(c)}
+   table=[{name:G.club.name,pts:0,p:0,w:0,d:0,l:0,gf:0,ga:0,quality:G.club.quality},...rivals.map(c=>({name:c.name,pts:0,p:0,w:0,d:0,l:0,gf:0,ga:0,quality:c.quality}))];
+  }else table=table.map(t=>({name:t.name,pts:int(t.pts,0,0,1000000),p:int(t.p,0,0,1000000),w:int(t.w,0,0,1000000),d:int(t.d,0,0,1000000),l:int(t.l,0,0,1000000),gf:int(t.gf,0,0,1000000),ga:int(t.ga,0,0,1000000),quality:int(t.quality,50,20,100)}));
+  G.table=table;
+  G.news=(Array.isArray(G.news)?G.news:[]).filter(n=>n&&typeof n==='object').slice(0,50).map(n=>({day:int(n.day,G.day,0,10000000),title:str(n.title,'Notícia',100),body:str(n.body,'',500),kind:str(n.kind,'Clube',40)}));
+  G.history=(Array.isArray(G.history)?G.history:[]).filter(m=>m&&typeof m==='object').slice(0,50).map(m=>({home:str(m.home,'Clube',80),away:str(m.away,'Adversário',80),score:str(m.score,'0 x 0',20),day:int(m.day,G.day,0,10000000)}));
+  G.confidenceVoteActive=Boolean(G.confidenceVoteActive);G.confidenceVoteDay=int(G.confidenceVoteDay,0,0,10000000);G.confidenceCooldownUntil=int(G.confidenceCooldownUntil,0,0,10000000);
+  if(!G.mandate)G.confidenceVoteActive=false;
+  G.lastUpdate=str(G.lastUpdate,'Carreira carregada e validada.',500);
+  if(!G.coach||!G.sponsor||!G.club.name||G.table.length!==8||!G.squad.length||!G.market.length){G=null;return false}
   save();return true;
  }catch(e){G=null;return false}
 }
