@@ -211,22 +211,23 @@ function upgrade(type){
  G.lastUpdate='Investimento concluído: '+type+'. Custo '+money(cost)+'.';addNews('Investimento aprovado',({training:'Centro de treinamento ampliado.',stadium:'Obras de modernização do estádio iniciadas.',youth:'Um jovem talento foi promovido da base.'})[type],'Clube');advanceDay(G.lastUpdate,true);render();toast('Investimento realizado.')
 }
 // ── Simulação esportiva: rodadas, tabela e resultados ──
-function simulateOtherFixtures(opponentName){const teams=G.table.filter(t=>t.name!==G.club.name&&t.name!==opponentName).sort((a,b)=>a.name.localeCompare(b.name));for(let i=0;i+1<teams.length;i+=2){const a=teams[i],b=teams[i+1];const ga=Math.max(0,Math.min(5,Math.round(Math.random()*1.7+(a.quality-b.quality)/14)));const gb=Math.max(0,Math.min(5,Math.round(Math.random()*1.7+(b.quality-a.quality)/14)));a.p++;b.p++;a.gf+=ga;a.ga+=gb;b.gf+=gb;b.ga+=ga;if(ga>gb){a.w++;a.pts+=3;b.l++}else if(gb>ga){b.w++;b.pts+=3;a.l++}else{a.d++;b.d++;a.pts++;b.pts++}}}
+function roundPairings(round){const ids=G.table.map((_,i)=>i);if(ids.length%2)ids.push(-1);const fixed=ids[0],rotating=ids.slice(1);for(let r=0;r<round%(ids.length-1);r++)rotating.unshift(rotating.pop());const order=[fixed,...rotating],pairs=[];for(let i=0;i<order.length/2;i++){const a=order[i],b=order[order.length-1-i];if(a>=0&&b>=0)pairs.push([G.table[a],G.table[b]])}return pairs}
+function simulateOtherFixtures(opponentName,round){for(const [a,b] of roundPairings(round)){if(a.name===G.club.name||b.name===G.club.name)continue;const ga=Math.max(0,Math.min(5,Math.round(Math.random()*1.7+(a.quality-b.quality)/14)));const gb=Math.max(0,Math.min(5,Math.round(Math.random()*1.7+(b.quality-a.quality)/14)));a.p++;b.p++;a.gf+=ga;a.ga+=gb;b.gf+=gb;b.ga+=ga;if(ga>gb){a.w++;a.pts+=3;b.l++}else if(gb>ga){b.w++;b.pts+=3;a.l++}else{a.d++;b.d++;a.pts++;b.pts++}}}
 function playMatch(){
  if(!G.mandate){toast('A campanha eleitoral vem primeiro. Vença a eleição para disputar a temporada.');return}
  if(G.round>=7){toast('As rodadas da temporada terminaram. Avance os dias até a próxima temporada.');return}
- const opponent=G.table.filter(t=>t.name!==G.club.name).sort((a,b)=>b.quality-a.quality)[G.round%7];
+ const playerTeam=G.table.find(t=>t.name===G.club.name);if(!playerTeam){toast('Tabela inválida: clube não encontrado.');return}const playerFixture=roundPairings(G.round).find(([a,b])=>a.name===G.club.name||b.name===G.club.name);const opponent=playerFixture?(playerFixture[0].name===G.club.name?playerFixture[1]:playerFixture[0]):null;
  if(!opponent){toast('Não foi possível encontrar o próximo adversário.');return}
  const me=G.table.find(t=>t.name===G.club.name);
  if(!me){toast('Tabela inválida: clube não encontrado.');return}
- simulateOtherFixtures(opponent.name);
+ simulateOtherFixtures(opponent.name,G.round);
  const home=G.round%2===0;
  const squadMorale=G.squad.length?G.squad.reduce((sum,p)=>sum+p.morale,0)/G.squad.length:50;
  const strength=G.club.quality+(G.coach.skill-G.club.quality)*.22+squadMorale*.08+(home?4:0);
  const opp=opponent.quality+Math.random()*8+(!home?4:0);
  let goals=Math.max(0,Math.min(5,Math.round(Math.random()*1.7+(strength-opp)/13)));
  let against=Math.max(0,Math.min(5,Math.round(Math.random()*1.6+(opp-strength)/14)));
- if(Math.random()<.15)goals++;if(Math.random()<.15)against++;
+ if(Math.random()<.15)goals=Math.min(5,goals+1);if(Math.random()<.15)against=Math.min(5,against+1);
  const teamGoals=goals,rivalGoals=against;
  const homeGoals=home?teamGoals:rivalGoals,awayGoals=home?rivalGoals:teamGoals,score=homeGoals+' x '+awayGoals;
  G.round++;G.goalsFor+=teamGoals;G.goalsAgainst+=rivalGoals;
