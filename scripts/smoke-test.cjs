@@ -100,10 +100,17 @@ for (let i = 0; i < 7; i++) {
   assert.ok(state().table.every(t => t.p === i + 1), 'todos os clubes devem ter o mesmo número de jogos');
 }
 assert.equal(state().wins + state().draws + state().losses, 7, 'o balanço do clube deve totalizar sete partidas');
+const opponents = state().history.slice(0, 7).map(m => m.home === state().club.name ? m.away : m.home);
+assert.equal(new Set(opponents).size, 7, 'o calendário deve enfrentar sete adversários diferentes na temporada');
+assert.ok(state().history.slice(0, 7).every(m => m.score.split(' x ').every(n => Number(n) <= 5)), 'nenhum placar pode ultrapassar cinco gols por equipe');
 const completedRound = state().round;
 call('playMatch()');
 assert.equal(state().round, completedRound, 'não deve existir oitava partida na mesma temporada');
 assert.ok(state().table.every(t => t.p === 7), 'tabela completa deve manter sete jogos por clube');
+call('G.day = 29; G.season = 3; advanceDay("virada após temporada concluída", true)');
+assert.equal(state().season, 4, 'a nova temporada deve iniciar na virada do calendário após concluir as sete rodadas');
+assert.equal(state().round, 0, 'a nova temporada deve reiniciar a rodada em zero');
+assert.ok(state().table.every(t => t.p === 0), 'a tabela só deve ser zerada quando começa uma nova temporada');
 
 // Patrocínio: renegociação não pode reduzir o contrato e o bloqueio impede bônus repetido.
 call('G.day = 20; G.sponsorLastNegotiationDay = 0; G.mandate = true');
