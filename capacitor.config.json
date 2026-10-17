@@ -1,0 +1,8 @@
+{
+  "appId": "com.presidentefc.game",
+  "appName": "Presidente FC",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
