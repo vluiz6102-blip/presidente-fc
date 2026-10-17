@@ -153,12 +153,13 @@ assert.equal(state().club.board, boardBefore, 'ações presidenciais devem ser b
 call('G.mandate = true; G.club.youth = 100; G.club.stadiumLevel = 100; G.club.capacity = 2000000; G.club.training = 100');
 const cashAtUpgradeLimit = state().club.cash;
 const dayAtUpgradeLimit = state().day;
+const squadAtUpgradeLimit = state().squad.length;
 call("upgrade('youth')");
 call("upgrade('stadium')");
 call("upgrade('training')");
 assert.equal(state().club.cash, cashAtUpgradeLimit, 'upgrade no limite não pode cobrar dinheiro');
 assert.equal(state().day, dayAtUpgradeLimit, 'upgrade no limite não pode consumir dia');
-assert.equal(state().squad.length, 12, 'upgrade de base bloqueado não pode criar atletas extras');
+assert.equal(state().squad.length, squadAtUpgradeLimit, 'upgrade de base bloqueado não pode criar atletas extras');
 context.prompt = () => '1';
 call("G.coach.name = 'André Farias'");
 const cashBeforeSameCoach = state().club.cash;
